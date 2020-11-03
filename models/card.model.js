@@ -18,7 +18,7 @@ const cardSchema = new Schema({
 
 const Card = mongoose.model("Card", cardSchema, "cards");
 
-Card.get = async (id) => {
+Card.getById = async (id) => {
   let [card, error] = [null, null];
 
   try {
@@ -30,11 +30,11 @@ Card.get = async (id) => {
   return [card, error];
 };
 
-Card.getAll = async () => {
+Card.get = async (query) => {
   let [cards, error] = [[], null];
 
   try {
-    cards = await Card.find({});
+    cards = await Card.find(query);
   } catch (err) {
     error = err;
   }
@@ -43,47 +43,48 @@ Card.getAll = async () => {
 };
 
 Card.add = async ({ content, authorId, columnId }) => {
-    const card = new Card({
-        content,
-        authorId,
-        columnId
+  const card = new Card({
+    content,
+    authorId,
+    columnId,
+  });
+
+  const newCard = await card.save();
+  console.log("Card.add = " + (newCard === card));
+  // return newCard === card;
+  return newCard;
+};
+
+Card.update = async (id, { content, authorId, columnId }) => {
+  let error = null;
+
+  try {
+    await Card.findByIdAndUpdate(id, {
+      content,
+      columnId,
+      authorId,
     });
+  } catch (err) {
+    error = err;
+  }
 
-    const newCard = await card.save();
-    console.log("Card.add = " + (newCard === card))
-    return newCard === card;
-}
-
-Card.update = async(id, { content, authorId, columnId }) => {
-    let error = null;
-
-    try {
-        await Card.findByIdAndUpdate(id, {
-            content,
-            authorId,
-            columnId
-        });
-    } catch (err) {
-        error = err;
-    }
-
-    return error;
-}
+  return error;
+};
 
 Card.delete = async (id) => {
-    let error = null;
-    
-    try {
-        const deletedCard = await Card.findByIdAndDelete(id);
-        console.log('card that is deleted: ' + deletedCard);
-        if (!deletedCard) {
-          throw 'This card does not exist'
-        }
-    } catch (err) {
-        error = err;
-    }
+  let error = null;
 
-    return error;
-}
+  try {
+    const deletedCard = await Card.findByIdAndDelete(id);
+    console.log("card that is deleted: " + deletedCard);
+    if (!deletedCard) {
+      throw "This card does not exist";
+    }
+  } catch (err) {
+    error = err;
+  }
+
+  return error;
+};
 
 module.exports = Card;

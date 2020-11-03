@@ -1,8 +1,9 @@
 const Column = require("../models/column.model");
 const columnController = {};
 
-columnController.getAll = async (req, res) => {
-  const [columns, error] = await Column.getAll();
+columnController.get = async (req, res) => {
+  const query = req.query;
+  const [columns, error] = await Column.get(query);
 
   if (error) {
     res.status(400).json("Error: " + error);
@@ -11,8 +12,8 @@ columnController.getAll = async (req, res) => {
   }
 };
 
-columnController.get = async (req, res) => {
-  const [column, error] = await Column.get(req.params.id);
+columnController.getById = async (req, res) => {
+  const [column, error] = await Column.getById(req.params.id);
 
   if (error) {
     res.status(400).json("Error: " + error);
@@ -25,16 +26,23 @@ columnController.add = async (req, res) => {
   const name = req.body.name;
   const boardId = req.body.boardId;
 
-  const status = await Column.add({
+  // const status = await Column.add({
+  //   name,
+  //   boardId
+  // });
+
+  // if (status) {
+  //   res.json("Add successfully");
+  // } else {
+  //   res.json("Add failed");
+  // }
+
+  const newColumn = await Column.add({
     name,
-    boardId
+    boardId,
   });
 
-  if (status) {
-    res.json("Add successfully");
-  } else {
-    res.json("Add failed");
-  }
+  res.json(newColumn);
 };
 
 columnController.update = async (req, res) => {

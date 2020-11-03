@@ -12,8 +12,9 @@ const Board = require("../models/board.model");
 //   }
 // };
 
-boardController.getAll = async (req, res) => {
-  const [boards, err] = await Board.getAll();
+boardController.get = async (req, res) => {
+  const query = req.query;
+  const [boards, err] = await Board.get(query);
 
   if (err) {
     res.status(400).json("Error: " + err);
@@ -21,10 +22,12 @@ boardController.getAll = async (req, res) => {
     res.json(boards);
   }
 };
-//------------cac ham xu ly chua refactor sang model----------------------------
 
-boardController.get = async (req, res) => {
-  const [board, err] = await Board.get();
+//-- các hàm chưa refactor sang bên model xử lý, vẫn còn xử lý trực tiếp tại controller
+
+boardController.getById = async (req, res) => {
+  const id = req.params.id;
+  const [board, err] = await Board.getById(id);
 
   if (err) {
     res.status(400).json("Error: " + err);
@@ -67,12 +70,12 @@ boardController.update = async (req, res) => {
 boardController.delete = async (req, res) => {
   const id = req.params.id;
 
-    const error = await Board.delete(id);
-    if (error) {
-      res.status(400).json("Error: " + err);
-    } else {
-      res.send("Delete successfully");
-    }
+  const error = await Board.delete(id);
+  if (error) {
+    res.status(400).json("Error: " + err);
+  } else {
+    res.send("Delete successfully");
+  }
 };
 
 module.exports = boardController;
