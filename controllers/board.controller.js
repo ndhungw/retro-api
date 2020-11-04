@@ -23,8 +23,6 @@ boardController.get = async (req, res) => {
   }
 };
 
-//-- các hàm chưa refactor sang bên model xử lý, vẫn còn xử lý trực tiếp tại controller
-
 boardController.getById = async (req, res) => {
   const id = req.params.id;
   const [board, err] = await Board.getById(id);
@@ -39,17 +37,24 @@ boardController.getById = async (req, res) => {
 boardController.add = async (req, res) => {
   const name = req.body.name;
   const userId = req.body.userId;
-  const status = await Board.add({
+  // const status = await Board.add({
+  //   name,
+  //   userId,
+  // });
+
+  // if (status) {
+  //   res.send("Add successfully");
+  // } else {
+  //   res.json("Add failed");
+  //   // res.status(400).json("Error: " + err);
+  // }
+
+  const newBoard = await Board.add({
     name,
     userId,
   });
 
-  if (status) {
-    res.send("Add successfully");
-  } else {
-    res.json("Add failed");
-    // res.status(400).json("Error: " + err);
-  }
+  res.json(newBoard);
 };
 
 boardController.update = async (req, res) => {

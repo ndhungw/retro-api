@@ -56,14 +56,14 @@ Board.add = async ({ name, userId }) => {
   });
 
   const newBoard = await board.save();
-  return newBoard === board;
+  return newBoard;
 };
 
 Board.update = async (id, { name }) => {
   let error = null;
 
   try {
-    const board = await Board.findByIdAndUpdate(id, {
+    await Board.findByIdAndUpdate(id, {
       name,
     });
   } catch (err) {
@@ -78,7 +78,11 @@ Board.delete = async (id) => {
   let error = null;
 
   try {
-    await Board.findByIdAndDelete(id);
+    const deletedBoard = await Board.findByIdAndDelete(id);
+    console.log("Board that is deleted: " + deletedBoard);
+    if (!deletedBoard) {
+      throw "This board does not exist";
+    }
   } catch (err) {
     error = err;
   }
