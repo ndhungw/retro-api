@@ -61,8 +61,8 @@ Card.update = async (id, { content, authorId, columnId }) => {
   try {
     const oldCard = await Card.findByIdAndUpdate(id, {
       content,
-      columnId,
-      authorId,
+      // columnId,
+      // authorId,
     });
     // console.log(oldCard)
     updatedCard = oldCard;
