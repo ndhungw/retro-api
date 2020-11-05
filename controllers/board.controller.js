@@ -61,14 +61,14 @@ boardController.update = async (req, res) => {
   const id = req.params.id;
   const name = req.body.name;
 
-  const error = await Board.update(id, {
+  const [updatedBoard, error] = await Board.update(id, {
     name: name,
   });
 
   if (error) {
-    res.status(400).json("Error: " + err);
+    res.status(400).json("Error: " + error);
   } else {
-    res.send("Update successfully");
+    res.send(updatedBoard);
   }
 };
 

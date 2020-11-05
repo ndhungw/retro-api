@@ -49,14 +49,14 @@ columnController.update = async (req, res) => {
   const id = req.params.id;
   const name = req.body.name;
 
-  const error = await Column.update(id, {
+  const [updatedColumn, error] = await Column.update(id, {
     name,
   });
 
   if (error) {
     res.status(400).json("Error: " + error);
   } else {
-    res.json("Update successfully");
+    res.json(updatedColumn);
   }
 };
 

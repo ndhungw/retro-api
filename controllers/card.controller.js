@@ -56,12 +56,16 @@ cardController.update = async (req, res) => {
   const columnId = req.body.columnId;
   const authorId = req.body.authorId;
 
-  const error = await Card.update(id, { content, columnId, authorId });
+  const [updatedCard, error] = await Card.update(id, {
+    content,
+    columnId,
+    authorId,
+  });
 
   if (error) {
     res.status(400).json("Error: " + error);
   } else {
-    res.json("Update successfully");
+    res.json(updatedCard);
   }
 };
 

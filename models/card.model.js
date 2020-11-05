@@ -56,19 +56,22 @@ Card.add = async ({ content, authorId, columnId }) => {
 };
 
 Card.update = async (id, { content, authorId, columnId }) => {
-  let error = null;
+  let [updatedCard, error] = [null, null];
 
   try {
-    await Card.findByIdAndUpdate(id, {
+    const oldCard = await Card.findByIdAndUpdate(id, {
       content,
       columnId,
       authorId,
     });
+    // console.log(oldCard)
+    updatedCard = oldCard;
+    updatedCard.content = content;
   } catch (err) {
     error = err;
   }
 
-  return error;
+  return [updatedCard, error];
 };
 
 Card.delete = async (id) => {

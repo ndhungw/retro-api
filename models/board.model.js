@@ -60,17 +60,20 @@ Board.add = async ({ name, userId }) => {
 };
 
 Board.update = async (id, { name }) => {
-  let error = null;
+  let [updatedBoard, error] = [null, null];
 
   try {
-    await Board.findByIdAndUpdate(id, {
+    const board = await Board.findByIdAndUpdate(id, {
       name,
     });
+    // console.log(board);
+    updatedBoard = board;
+    updatedBoard.name = name;
   } catch (err) {
     console.log("Error: " + err);
     error = err;
   }
-  return error;
+  return [updatedBoard, error];
 };
 
 // DELETE
