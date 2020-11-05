@@ -59,10 +59,10 @@ Column.update = async (id, { name }) => {
   let [updatedColumn, error] = [null, null];
 
   try {
-    const column = await Column.findByIdAndUpdate(id, {
+    const oldColumn = await Column.findByIdAndUpdate(id, {
       name,
     });
-    updatedColumn = column;
+    updatedColumn = oldColumn;
     updatedColumn.name = name;
   } catch (err) {
     console.log("Error: " + err);

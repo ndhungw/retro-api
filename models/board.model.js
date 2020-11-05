@@ -63,11 +63,11 @@ Board.update = async (id, { name }) => {
   let [updatedBoard, error] = [null, null];
 
   try {
-    const board = await Board.findByIdAndUpdate(id, {
+    const oldBoard = await Board.findByIdAndUpdate(id, {
       name,
     });
-    // console.log(board);
-    updatedBoard = board;
+    // console.log(oldBoard);
+    updatedBoard = oldBoard;
     updatedBoard.name = name;
   } catch (err) {
     console.log("Error: " + err);
