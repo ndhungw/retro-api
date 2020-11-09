@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Column = require("./column.model");
 const { Schema } = mongoose;
 
 const boardSchema = new Schema(
@@ -74,10 +75,29 @@ Board.update = async (id, { name, columnIdsList }) => {
   }
 
   try {
-    const board = await Board.findOneAndUpdate({ _id: id }, boardToUpdate, {
+    // cập nhật lại các column có trong columnIdsList
+    const oldBoard = await Board.findById(id);
+
+    // có thay đổi columnIdsList
+    if (columnIdsList !== oldBoard.columnIdsList) {
+      // column nào có trong list mới thì gán boardId=id
+      columnIdsList.map(async (columnId) => {
+        await Column.update(columnId, { boardId: id });
+      });
+
+      // column nào có trong list cũ nhưng không có trong list mới thì gán boardId=null
+      const columnIdsListToBeNull = oldBoard.columnIdsList.filter(
+        (columnId) => !columnIdsList.includes(columnId)
+      );
+      columnIdsListToBeNull.map(async (columnId) => {
+        await Column.update(columnId, { boardId: null });
+      });
+    }
+
+    // cập nhật dữ liệu mới
+    updatedBoard = await Board.findOneAndUpdate({ _id: id }, boardToUpdate, {
       new: true,
     });
-    updatedBoard = board;
   } catch (err) {
     console.log("Error: " + err);
     error = err;
@@ -90,12 +110,15 @@ Board.delete = async (id) => {
   let [deletedBoard, error] = [null, null];
 
   try {
-    const board = await Board.findByIdAndDelete(id);
-    deletedBoard = board;
-    // console.log("Board that is deleted: " + deletedBoard);
+    deletedBoard = await Board.findByIdAndDelete(id);
     if (!deletedBoard) {
       throw "This board does not exist";
     }
+
+    // xóa tất cả các column thuộc board này -> tự động xóa các card thuộc các column đó
+    deletedBoard.columnIdsList.map(async (columnId) => {
+      await Column.delete(columnId);
+    });
   } catch (err) {
     error = err;
   }

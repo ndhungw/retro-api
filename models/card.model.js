@@ -65,24 +65,21 @@ Card.add = async ({ content, userId, columnId }) => {
 
   const newCard = await card.save();
 
-  // // add the id of this card into cardIdsList of column with id = columnId
-  // if (columnId) {
-  //   try {
-  //     const column = await Column.findById(columnId);
-  //     if (column) {
-  //       await Column.findOneAndUpdate(
-  //         { _id: columnId },
-  //         {
-  //           cardIdsList: [...column.cardIdsList, newCard._id],
-  //         }
-  //       );
-  //     } else {
-  //       throw "Column not found";
-  //     }
-  //   } catch (err) {
-  //     console.log(err);
-  //   }
-  // }
+  // add the id of this card into cardIdsList of column with id = columnId
+  if (columnId) {
+    try {
+      const [column, columnError] = await Column.getById(columnId);
+      if (column) {
+        await Column.update(columnId, {
+          cardIdsList: [...column.cardIdsList, newCard._id],
+        });
+      } else {
+        throw "This card does not belong to any column";
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }
 
   return newCard;
 };
@@ -102,37 +99,30 @@ Card.update = async (id, { content, userId, columnId }) => {
   }
 
   try {
-    // const oldCard = await Card.findById(id);
+    const oldCard = await Card.findById(id);
 
-    // // nếu có cập nhật columnId
-    // if (columnId != oldCard.columnId) {
-    //   // console.log("yo, column có sự cập nhật nha");
-    //   const oldColumn = await Column.findById(oldCard.columnId);
-    //   // console.log("oldColumn:", oldColumn);
-    //   const newCardIdsList = oldColumn.cardIdsList.filter(
-    //     (cardId) => cardId != oldCard._id
-    //   );
-    //   // console.log("oldColumn.cardIdsList: ", test01);
+    // nếu có cập nhật columnId
+    if (columnId != oldCard.columnId) {
+      const [oldColumn, oldColumnError] = await Column.getById(
+        oldCard.columnId
+      );
+      const [newColumn, newColumnError] = await Column.getById(columnId);
 
-    //   // loại bỏ id của card cũ ra khỏi cardIdsList của column cũ
-    //   const responseOfRemove = await Column.findOneAndUpdate(
-    //     { _id: oldColumn._id },
-    //     {
-    //       cardIdsList: newCardIdsList,
-    //     }
-    //   );
-    //   // console.log("responseOfRemove: ", responseOfRemove);
+      // cập nhật cardIdsList của column cũ
+      const updatedCardIdsListForOldColumn = oldColumn.cardIdsList.filter(
+        (cardId) => cardId != oldCard._id
+      );
 
-    //   const newColumn = await Column.findById(columnId);
+      // bỏ id của card cũ ra khỏi cardIdsList của column cũ
+      await Column.update(oldColumn._id, {
+        cardIdsList: updatedCardIdsListForOldColumn,
+      });
 
-    //   // thêm id của card mới vào cardIdsList của column mới
-    //   await Column.findOneAndUpdate(
-    //     { _id: columnId },
-    //     {
-    //       cardIdsList: [...newColumn.cardIdsList, id],
-    //     }
-    //   );
-    // }
+      // thêm id của card mới vào cardIdsList của column mới
+      await Column.update(columnId, {
+        cardIdsList: [...newColumn.cardIdsList, id],
+      });
+    }
 
     const card = await Card.findOneAndUpdate({ _id: id }, cardToUpdate, {
       new: true, // lay lai gia tri cu
@@ -156,15 +146,12 @@ Card.delete = async (id) => {
       throw "This card does not exist";
     }
 
-    // // xóa id này bên trong cardIdsList của column chứa card này
-    // const column = await Column.findById(deletedCard.columnId);
-    // const newCardList = column.cardIdsList.filter((cardId) => cardId != id);
-    // await Column.findOneAndUpdate(
-    //   { _id: column._id },
-    //   {
-    //     cardIdsList: newCardList,
-    //   }
-    // );
+    // xóa id này bên trong cardIdsList của column chứa card này
+    const [column, getColumnError] = await Column.getById(deletedCard.columnId);
+    const newCardList = column.cardIdsList.filter((cardId) => cardId != id);
+    await Column.update(column._id, {
+      cardIdsList: newCardList,
+    });
   } catch (err) {
     error = err;
   }

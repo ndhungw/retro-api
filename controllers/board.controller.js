@@ -56,9 +56,6 @@ boardController.delete = async (req, res) => {
   if (error) {
     res.status(400).json("Error: " + err);
   } else {
-    // xóa tất cả các column thuộc board này
-
-    // xóa tất cả các card thuộc
     res.send("Delete successfully");
   }
 };
