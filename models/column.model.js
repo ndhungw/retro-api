@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+const Board = require("../models/board.model");
+const Card = require("../models/card.model");
 
 const columnSchema = new Schema(
   {
@@ -11,6 +13,10 @@ const columnSchema = new Schema(
     boardId: {
       type: String,
       required: true,
+    },
+    cardIdsList: {
+      type: Array,
+      default: [],
     },
   },
   {
@@ -45,25 +51,48 @@ Column.getById = async (id) => {
 };
 
 Column.add = async ({ name, boardId }) => {
-  const column = new Column({
-    name,
-    boardId,
-  });
+  const columnToAdd = {};
+  if (name) {
+    columnToAdd.name = name;
+  }
+  if (boardId) {
+    columnToAdd.boardId = boardId;
+  }
+
+  const column = new Column(columnToAdd);
 
   const newColumn = await column.save();
-  console.log("Column.add: " + (newColumn === column));
+
+  // // thêm id vào columnIdsList trong board chứa column này
+  // const board = await Board.findById(boardId);
+  // await Board.findOneAndUpdate(
+  //   { _id: boardId },
+  //   {
+  //     columnIdsList: [...board.columnIdsList, newColumn._id],
+  //   }
+  // );
+
   return newColumn;
 };
 
-Column.update = async (id, { name }) => {
+Column.update = async (id, { name, boardId, cardIdsList }) => {
   let [updatedColumn, error] = [null, null];
+  const columnToUpdate = {};
+  if (name) {
+    columnToUpdate.name = name;
+  }
+  if (boardId) {
+    columnToUpdate.boardId = name;
+  }
+  if (cardIdsList) {
+    columnToUpdate.cardIdsList = cardIdsList;
+  }
 
   try {
-    const oldColumn = await Column.findByIdAndUpdate(id, {
-      name,
+    const column = await Column.findOneAndUpdate({ _id: id }, columnToUpdate, {
+      new: true,
     });
-    updatedColumn = oldColumn;
-    updatedColumn.name = name;
+    updatedColumn = column;
   } catch (err) {
     console.log("Error: " + err);
     error = err;
@@ -73,15 +102,37 @@ Column.update = async (id, { name }) => {
 
 // DELETE
 Column.delete = async (id) => {
-  let error = null;
+  let [deletedColumn, error] = [null, null];
 
   try {
-    await Column.findByIdAndDelete(id);
+    // xóa cột
+    const column = await Column.findByIdAndDelete(id);
+    deletedColumn = column;
+    // const boardId = deletedColumn.boardId;
+    // console.log("deletedColumn.boardId: ", boardId);
+
+    if (!deletedColumn) {
+      throw "Column does not exist";
+    }
+
+    // // xóa tất cả các card thuộc column này
+    // deletedColumn.cardIdsList.map(async (cardId) => {
+    //   await Card.findByIdAndDelete(cardId);
+    // });
+
+    // // xóa id khỏi columnIdsList trong board chứa column này
+    // const board = await Board.findById(boardId);
+    // await Board.findOneAndUpdate(
+    //   { _id: boardId },
+    //   {
+    //     columnIdsList: board.columnIdsList.filter((columnId) => columnId != id),
+    //   }
+    // );
   } catch (err) {
     error = err;
   }
 
-  return error;
+  return [deletedColumn, error];
 };
 
 module.exports = Column;

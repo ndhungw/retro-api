@@ -11,10 +11,14 @@ const boardSchema = new Schema(
       type: String,
       required: true,
     },
-    // showHiddenCards: {
-    //     type: Boolean,
-    //     default: true
-    // }
+    columnIdsList: {
+      type: Array,
+      default: [],
+    },
+    isPublic: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
@@ -24,11 +28,10 @@ const boardSchema = new Schema(
 const Board = mongoose.model("Board", boardSchema, "boards");
 
 Board.get = async (query) => {
-  console.log(query);
   let [boards, error] = [[], null];
 
   try {
-    boards = await Board.find(query);
+    boards = await Board.find(query).sort({ $natural: 1 });
   } catch (err) {
     console.log("Error: " + err);
     error = err;
@@ -59,16 +62,22 @@ Board.add = async ({ name, userId }) => {
   return newBoard;
 };
 
-Board.update = async (id, { name }) => {
+Board.update = async (id, { name, columnIdsList }) => {
   let [updatedBoard, error] = [null, null];
+  const boardToUpdate = {};
+
+  if (name) {
+    boardToUpdate.name = name;
+  }
+  if (columnIdsList) {
+    boardToUpdate.columnIdsList = columnIdsList;
+  }
 
   try {
-    const oldBoard = await Board.findByIdAndUpdate(id, {
-      name,
+    const board = await Board.findOneAndUpdate({ _id: id }, boardToUpdate, {
+      new: true,
     });
-    // console.log(oldBoard);
-    updatedBoard = oldBoard;
-    updatedBoard.name = name;
+    updatedBoard = board;
   } catch (err) {
     console.log("Error: " + err);
     error = err;
@@ -78,11 +87,12 @@ Board.update = async (id, { name }) => {
 
 // DELETE
 Board.delete = async (id) => {
-  let error = null;
+  let [deletedBoard, error] = [null, null];
 
   try {
-    const deletedBoard = await Board.findByIdAndDelete(id);
-    console.log("Board that is deleted: " + deletedBoard);
+    const board = await Board.findByIdAndDelete(id);
+    deletedBoard = board;
+    // console.log("Board that is deleted: " + deletedBoard);
     if (!deletedBoard) {
       throw "This board does not exist";
     }
@@ -90,6 +100,6 @@ Board.delete = async (id) => {
     error = err;
   }
 
-  return error;
+  return [deletedBoard, error];
 };
 module.exports = Board;

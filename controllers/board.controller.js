@@ -1,17 +1,6 @@
 const boardController = {};
 const Board = require("../models/board.model");
 
-// phiên bản cũ
-// boardController.getAll = async (req, res) => {
-//   try {
-//     const boards = await Board.find({}).limit(6);
-//     // console.log(boards);
-//     res.json(boards);
-//   } catch (err) {
-//     res.status(400).json("Error: " + err);
-//   }
-// };
-
 boardController.get = async (req, res) => {
   const query = req.query;
   const [boards, err] = await Board.get(query);
@@ -37,17 +26,6 @@ boardController.getById = async (req, res) => {
 boardController.add = async (req, res) => {
   const name = req.body.name;
   const userId = req.body.userId;
-  // const status = await Board.add({
-  //   name,
-  //   userId,
-  // });
-
-  // if (status) {
-  //   res.send("Add successfully");
-  // } else {
-  //   res.json("Add failed");
-  //   // res.status(400).json("Error: " + err);
-  // }
 
   const newBoard = await Board.add({
     name,
@@ -60,10 +38,9 @@ boardController.add = async (req, res) => {
 boardController.update = async (req, res) => {
   const id = req.params.id;
   const name = req.body.name;
+  const columnIdsList = req.body.columnIdsList;
 
-  const [updatedBoard, error] = await Board.update(id, {
-    name: name,
-  });
+  const [updatedBoard, error] = await Board.update(id, { name, columnIdsList });
 
   if (error) {
     res.status(400).json("Error: " + error);
@@ -75,10 +52,13 @@ boardController.update = async (req, res) => {
 boardController.delete = async (req, res) => {
   const id = req.params.id;
 
-  const error = await Board.delete(id);
+  const [deletedBoard, error] = await Board.delete(id);
   if (error) {
     res.status(400).json("Error: " + err);
   } else {
+    // xóa tất cả các column thuộc board này
+
+    // xóa tất cả các card thuộc
     res.send("Delete successfully");
   }
 };
