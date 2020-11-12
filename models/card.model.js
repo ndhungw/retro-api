@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-// const Column = require("../models/column.model");
+const Column = require("../models/column.model");
 
 const cardSchema = new Schema(
   {
@@ -68,9 +68,14 @@ Card.add = async ({ content, userId, columnId }) => {
   // add the id of this card into cardIdsList of column with id = columnId
   if (columnId) {
     try {
-      const [column, columnError] = await Column.getById(columnId);
+      const [column, columnError] = await mongoose
+        .model("Column")
+        .getById(columnId);
       if (column) {
-        await Column.update(columnId, {
+        // await mongoose.model("Column").update(columnId, {
+        //   cardIdsList: [...column.cardIdsList, newCard._id],
+        // });
+        await mongoose.model("Column").findByIdAndUpdate(columnId, {
           cardIdsList: [...column.cardIdsList, newCard._id],
         });
       } else {
@@ -88,11 +93,11 @@ Card.update = async (id, { content, userId, columnId }) => {
   let [updatedCard, error] = [null, null];
   const cardToUpdate = {};
 
-  if (content) {
-    cardToUpdate.content = content;
-  }
   if (userId) {
     cardToUpdate.userId = userId;
+  }
+  if (content) {
+    cardToUpdate.content = content;
   }
   if (columnId) {
     cardToUpdate.columnId = columnId;
@@ -101,33 +106,65 @@ Card.update = async (id, { content, userId, columnId }) => {
   try {
     const oldCard = await Card.findById(id);
 
-    // nếu có cập nhật columnId
-    if (columnId != oldCard.columnId) {
-      const [oldColumn, oldColumnError] = await Column.getById(
-        oldCard.columnId
-      );
-      const [newColumn, newColumnError] = await Column.getById(columnId);
+    // if (columnId === null && userId === null && content === null) {
+    //   // được gọi từ Column.update, mục đích muốn thay đổi cardIdsList
+    //   // card này sẽ tạm thời có columnId = null
+    //   await Card.findByIdAndUpdate(id, { columnId: null });
+    // } else
 
-      // cập nhật cardIdsList của column cũ
-      const updatedCardIdsListForOldColumn = oldColumn.cardIdsList.filter(
-        (cardId) => cardId != oldCard._id
-      );
+    if (columnId) {
+      // nếu có cập nhật columnId
+      if (columnId != oldCard.columnId) {
+        // const [oldColumn, oldColumnError] = await mongoose
+        //   .model("Column")
+        //   .getById(oldCard.columnId);
+        const oldColumn = await mongoose
+          .model("Column")
+          .findById(oldCard.columnId);
+        const newColumn = await mongoose.model("Column").findById(columnId);
 
-      // bỏ id của card cũ ra khỏi cardIdsList của column cũ
-      await Column.update(oldColumn._id, {
-        cardIdsList: updatedCardIdsListForOldColumn,
-      });
+        // cập nhật cardIdsList của column cũ
+        const updatedCardIdsListForOldColumn = oldColumn.cardIdsList.filter(
+          (cardId) => cardId != id
+        );
+        console.log(
+          "Card.update - updatedCardIdsListForOldColumn:",
+          updatedCardIdsListForOldColumn
+        );
+        // bỏ id của card cũ ra khỏi cardIdsList của column cũ
+        // await mongoose.model("Column").update(oldColumn._id, {
+        //   cardIdsList: updatedCardIdsListForOldColumn,
+        // });
+        const oldColumnUpdated = await mongoose
+          .model("Column")
+          .findByIdAndUpdate(
+            oldColumn._id,
+            {
+              cardIdsList: updatedCardIdsListForOldColumn,
+            },
+            { new: true }
+          );
+        console.log("Card.update - oldColumnUpdated", oldColumnUpdated);
 
-      // thêm id của card mới vào cardIdsList của column mới
-      await Column.update(columnId, {
-        cardIdsList: [...newColumn.cardIdsList, id],
-      });
+        // thêm id của card mới vào cardIdsList của column mới
+        // await mongoose.model("Column").update(columnId, {
+        //   cardIdsList: [...newColumn.cardIdsList, id],
+        // });
+        const newColumnUpdated = await mongoose
+          .model("Column")
+          .findByIdAndUpdate(
+            columnId,
+            {
+              cardIdsList: [...newColumn.cardIdsList, id],
+            },
+            { new: true }
+          );
+        console.log("Card.update - newColumnUpdated", newColumnUpdated);
+      }
     }
-
-    const card = await Card.findOneAndUpdate({ _id: id }, cardToUpdate, {
+    updatedCard = await Card.findOneAndUpdate({ _id: id }, cardToUpdate, {
       new: true, // lay lai gia tri cu
     });
-    updatedCard = card;
   } catch (err) {
     error = err;
   }
@@ -139,19 +176,37 @@ Card.delete = async (id) => {
   let [deletedCard, error] = [null, null];
 
   try {
-    const card = await Card.findByIdAndDelete(id);
-    // console.log("card that is deleted: " + card);
-    deletedCard = card;
-    if (!card) {
+    // xóa card
+    deletedCard = await Card.findByIdAndDelete(id);
+    if (!deletedCard) {
       throw "This card does not exist";
     }
 
     // xóa id này bên trong cardIdsList của column chứa card này
-    const [column, getColumnError] = await Column.getById(deletedCard.columnId);
-    const newCardList = column.cardIdsList.filter((cardId) => cardId != id);
-    await Column.update(column._id, {
-      cardIdsList: newCardList,
-    });
+    // const [column, getColumnError] = await mongoose
+    //   .model("Column")
+    //   .getById(deletedCard.columnId);
+    const column = await mongoose
+      .model("Column")
+      .findById(deletedCard.columnId);
+
+    // bo id ra khoi cardIdsList trong column
+    if (column) {
+      const newCardList = column.cardIdsList.filter((cardId) => cardId != id);
+      const updatedColumnWhenDeleteCard = await mongoose
+        .model("Column")
+        .findByIdAndUpdate(
+          column._id,
+          {
+            cardIdsList: newCardList,
+          },
+          { new: true }
+        );
+      console.log(
+        "Card.delte - updatedColumnWhenDeleteCard",
+        updatedColumnWhenDeleteCard
+      );
+    }
   } catch (err) {
     error = err;
   }

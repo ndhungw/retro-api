@@ -77,27 +77,44 @@ Board.update = async (id, { name, columnIdsList }) => {
   try {
     // cập nhật lại các column có trong columnIdsList
     const oldBoard = await Board.findById(id);
+    console.log("1");
 
-    // có thay đổi columnIdsList
-    if (columnIdsList !== oldBoard.columnIdsList) {
-      // column nào có trong list mới thì gán boardId=id
-      columnIdsList.map(async (columnId) => {
-        await Column.update(columnId, { boardId: id });
-      });
+    if (columnIdsList) {
+      // có thay đổi columnIdsList
+      console.log("columnIdsList", columnIdsList);
+      console.log("oldBoard.columnIdsList", oldBoard.columnIdsList);
+      if (columnIdsList !== oldBoard.columnIdsList) {
+        // column nào có trong list mới thì gán boardId=id
+        columnIdsList.map(async (columnId) => {
+          // await mongoose.model("Column").update(columnId, { boardId: id });
+          await mongoose
+            .model("Column")
+            .findByIdAndUpdate(columnId, { boardId: id });
+        });
+        console.log("2");
 
-      // column nào có trong list cũ nhưng không có trong list mới thì gán boardId=null
-      const columnIdsListToBeNull = oldBoard.columnIdsList.filter(
-        (columnId) => !columnIdsList.includes(columnId)
-      );
-      columnIdsListToBeNull.map(async (columnId) => {
-        await Column.update(columnId, { boardId: null });
-      });
+        // column nào có trong list cũ nhưng không có trong list mới thì gán boardId=null
+        const columnIdsListToBeNull = oldBoard.columnIdsList.filter(
+          (columnId) => !columnIdsList.includes(columnId)
+        );
+        console.log("3");
+        // if (columnIdsListToBeNull) {
+        columnIdsListToBeNull.map(async (columnId) => {
+          // await mongoose.model("Column").update(columnId, { boardId: null });
+          await mongoose
+            .model("Column")
+            .findByIdAndUpdate(columnId, { boardId: null });
+        });
+        console.log("4");
+        // }
+      }
     }
 
     // cập nhật dữ liệu mới
     updatedBoard = await Board.findOneAndUpdate({ _id: id }, boardToUpdate, {
       new: true,
     });
+    console.log("5");
   } catch (err) {
     console.log("Error: " + err);
     error = err;
@@ -117,7 +134,8 @@ Board.delete = async (id) => {
 
     // xóa tất cả các column thuộc board này -> tự động xóa các card thuộc các column đó
     deletedBoard.columnIdsList.map(async (columnId) => {
-      await Column.delete(columnId);
+      await mongoose.model("Column").findByIdAndDelete(columnId);
+      await mongoose.model("Card").deleteMany({ columnId: columnId });
     });
   } catch (err) {
     error = err;

@@ -64,6 +64,7 @@ columnController.update = async (req, res) => {
 columnController.delete = async (req, res) => {
   const id = req.params.id;
 
+  console.log("columnController.delete - call Column.delete(id)");
   const [deletedColumn, error] = await Column.delete(id);
 
   // // xóa tất cả các card thuộc column này
