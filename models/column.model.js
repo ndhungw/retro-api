@@ -82,11 +82,12 @@ Column.update = async (id, { name, boardId, cardIdsList }) => {
     columnToUpdate.name = name;
   }
   if (boardId) {
-    columnToUpdate.boardId = name;
+    columnToUpdate.boardId = boardId;
   }
   if (cardIdsList) {
     columnToUpdate.cardIdsList = cardIdsList;
   }
+  console.log("Column.update - columnToUpdate = ", columnToUpdate);
 
   try {
     // xử lí ràng buộc dữ liệu
@@ -181,7 +182,6 @@ Column.delete = async (id) => {
     const columnId = deletedColumn._id;
     console.log("Column.delete - deletedColumnId = ", columnId);
     await mongoose.model("Card").deleteMany({ columnId: columnId });
-    console.log("ye");
 
     // xóa id khỏi columnIdsList trong board chứa column này
     const board = await mongoose.model("Board").findById(deletedColumn.boardId);
