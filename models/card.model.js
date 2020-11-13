@@ -41,6 +41,25 @@ Card.get = async (query) => {
 
   try {
     cards = await Card.find(query);
+    console.log("card", cards);
+
+    if (query.columnId) {
+      const column = await mongoose.model("Column").findById(query.columnId);
+      console.log("column", column);
+      const cardIdsList = column.cardIdsList;
+      console.log("cardIdsList", cardIdsList);
+
+      // const sortedCardsList = cardIdsList.map((cardId) => {
+      //   const selectedCards = cards.filter((card) => card._id == cardId);
+      //   return selectedCards[0];
+      // });
+      const sortedCardsList = cardIdsList.map(
+        (cardId) =>
+          cards.filter((card) => card._id.toString() == cardId.toString())[0]
+      );
+
+      return [sortedCardsList, error];
+    }
   } catch (err) {
     error = err;
   }
