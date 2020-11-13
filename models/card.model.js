@@ -41,13 +41,12 @@ Card.get = async (query) => {
 
   try {
     cards = await Card.find(query);
-    console.log("card", cards);
 
     if (query.columnId) {
       const column = await mongoose.model("Column").findById(query.columnId);
-      console.log("column", column);
+      // console.log("column", column);
       const cardIdsList = column.cardIdsList;
-      console.log("cardIdsList", cardIdsList);
+      // console.log("cardIdsList", cardIdsList);
 
       // const sortedCardsList = cardIdsList.map((cardId) => {
       //   const selectedCards = cards.filter((card) => card._id == cardId);
@@ -146,10 +145,10 @@ Card.update = async (id, { content, userId, columnId }) => {
         const updatedCardIdsListForOldColumn = oldColumn.cardIdsList.filter(
           (cardId) => cardId != id
         );
-        console.log(
-          "Card.update - updatedCardIdsListForOldColumn:",
-          updatedCardIdsListForOldColumn
-        );
+        // console.log(
+        //   "Card.update - updatedCardIdsListForOldColumn:",
+        //   updatedCardIdsListForOldColumn
+        // );
         // bỏ id của card cũ ra khỏi cardIdsList của column cũ
         // await mongoose.model("Column").update(oldColumn._id, {
         //   cardIdsList: updatedCardIdsListForOldColumn,
@@ -163,7 +162,7 @@ Card.update = async (id, { content, userId, columnId }) => {
             },
             { new: true }
           );
-        console.log("Card.update - oldColumnUpdated", oldColumnUpdated);
+        // console.log("Card.update - oldColumnUpdated", oldColumnUpdated);
 
         // thêm id của card mới vào cardIdsList của column mới
         // await mongoose.model("Column").update(columnId, {
@@ -178,7 +177,7 @@ Card.update = async (id, { content, userId, columnId }) => {
             },
             { new: true }
           );
-        console.log("Card.update - newColumnUpdated", newColumnUpdated);
+        // console.log("Card.update - newColumnUpdated", newColumnUpdated);
       }
     }
     updatedCard = await Card.findOneAndUpdate({ _id: id }, cardToUpdate, {
@@ -221,10 +220,10 @@ Card.delete = async (id) => {
           },
           { new: true }
         );
-      console.log(
-        "Card.delte - updatedColumnWhenDeleteCard",
-        updatedColumnWhenDeleteCard
-      );
+      // console.log(
+      //   "Card.delete - updatedColumnWhenDeleteCard",
+      //   updatedColumnWhenDeleteCard
+      // );
     }
   } catch (err) {
     error = err;

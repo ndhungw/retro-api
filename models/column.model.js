@@ -87,7 +87,7 @@ Column.update = async (id, { name, boardId, cardIdsList }) => {
   if (cardIdsList) {
     columnToUpdate.cardIdsList = cardIdsList;
   }
-  console.log("Column.update - columnToUpdate = ", columnToUpdate);
+  // console.log("Column.update - columnToUpdate = ", columnToUpdate);
 
   try {
     // xử lí ràng buộc dữ liệu
@@ -144,7 +144,6 @@ Column.update = async (id, { name, boardId, cardIdsList }) => {
         });
         // }
         // những card có cardId trong list mới được gán bằng id của cột này
-        console.log("9");
         cardIdsList.map(async (cardId) => {
           // await mongoose.model("Card").update(cardId, { columnId: id });
           await mongoose
@@ -158,7 +157,6 @@ Column.update = async (id, { name, boardId, cardIdsList }) => {
     updatedColumn = await Column.findOneAndUpdate({ _id: id }, columnToUpdate, {
       new: true,
     });
-    console.log("10");
   } catch (err) {
     console.log("Error: " + err);
     error = err;
@@ -180,7 +178,7 @@ Column.delete = async (id) => {
     //   await mongoose.model("Card").findOneAndDelete(cardId);
     // });
     const columnId = deletedColumn._id;
-    console.log("Column.delete - deletedColumnId = ", columnId);
+    // console.log("Column.delete - deletedColumnId = ", columnId);
     await mongoose.model("Card").deleteMany({ columnId: columnId });
 
     // xóa id khỏi columnIdsList trong board chứa column này

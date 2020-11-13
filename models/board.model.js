@@ -77,7 +77,6 @@ Board.update = async (id, { name, columnIdsList }) => {
   try {
     // cập nhật lại các column có trong columnIdsList
     const oldBoard = await Board.findById(id);
-    console.log("1");
 
     if (columnIdsList) {
       // có thay đổi columnIdsList
@@ -91,13 +90,12 @@ Board.update = async (id, { name, columnIdsList }) => {
             .model("Column")
             .findByIdAndUpdate(columnId, { boardId: id });
         });
-        console.log("2");
 
         // column nào có trong list cũ nhưng không có trong list mới thì gán boardId=null
         const columnIdsListToBeNull = oldBoard.columnIdsList.filter(
           (columnId) => !columnIdsList.includes(columnId)
         );
-        console.log("3");
+
         // if (columnIdsListToBeNull) {
         columnIdsListToBeNull.map(async (columnId) => {
           // await mongoose.model("Column").update(columnId, { boardId: null });
@@ -105,7 +103,6 @@ Board.update = async (id, { name, columnIdsList }) => {
             .model("Column")
             .findByIdAndUpdate(columnId, { boardId: null });
         });
-        console.log("4");
         // }
       }
     }
@@ -114,7 +111,6 @@ Board.update = async (id, { name, columnIdsList }) => {
     updatedBoard = await Board.findOneAndUpdate({ _id: id }, boardToUpdate, {
       new: true,
     });
-    console.log("5");
   } catch (err) {
     console.log("Error: " + err);
     error = err;
