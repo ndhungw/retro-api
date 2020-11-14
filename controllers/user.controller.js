@@ -1,23 +1,25 @@
+const { Mongoose } = require("mongoose");
 const User = require("../models/user.model");
 const userController = {};
 
-// --- chưa refactor sang model, vẫn còn xử lý trực tiếp tại controller
 userController.get = async (req, res) => {
   const query = req.query;
-  try {
-    const users = await User.find(query);
+  const [users, error] = await User.get(query);
+
+  if (error) {
+    res.status(400).json("Error: ", error);
+  } else {
     res.json(users);
-  } catch (err) {
-    res.status(400).json("Error: " + err);
   }
 };
 
 userController.getById = async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
+  const [user, error] = await User.getById(req.params.id);
+
+  if (error) {
+    res.status(400).json("Error: ", error);
+  } else {
     res.json(user);
-  } catch (err) {
-    res.status(400).send("Error: " + err);
   }
 };
 
@@ -27,48 +29,52 @@ userController.add = async (req, res) => {
   const email = req.body.email;
   const phone = req.body.phone;
 
-  try {
-    const user = new User({
-      username,
-      password,
-      email,
-      phone,
-    });
-    console.log(user);
-    await user.save();
-    res.send(`Add user successfully ${user}`);
-  } catch (err) {
-    res.status(400).send("Error: " + err);
-  }
+  console.log("username: ", username);
+  console.log("password", password);
+  console.log("email", email);
+  console.log("phone", phone);
+
+  const newUser = await User.add({
+    username,
+    password,
+    email,
+    phone,
+  });
+  // console.log("userController.add: newUser", newUser);
+
+  res.json(newUser);
 };
 
 userController.update = async (req, res) => {
+  const id = req.params.id;
   const username = req.body.username;
   const password = req.body.password;
   const email = req.body.email;
   const phone = req.body.phone;
 
-  try {
-    const user = await User.findByIdAndUpdate(req.params.id, {
-      username,
-      password,
-      email,
-      phone,
-    });
-    console.log(user);
+  const [updatedUser, error] = await User.update(id, {
+    username,
+    password,
+    email,
+    phone,
+  });
 
-    res.send(`Update user successfully ${user}`);
-  } catch (err) {
-    res.status(400).send("Error: " + err);
+  if (error) {
+    res.status(400).json("Error: ", error);
+  } else {
+    res.json(updatedUser);
   }
 };
 
 userController.delete = async (req, res) => {
-  try {
-    const user = await User.findByIdAndDelete(req.params.id);
-    res.send(`Delete user successfully ${user}`);
-  } catch (err) {
-    res.status(400).send("Error: " + err);
+  const id = req.params.id;
+
+  const [deletedUser, error] = await User.delete(id);
+
+  if (error) {
+    res.status(400).send("Error: ", error);
+  } else {
+    res.json(deletedUser);
   }
 };
 

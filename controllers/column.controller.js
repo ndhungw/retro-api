@@ -1,14 +1,12 @@
 const Column = require("../models/column.model");
 const columnController = {};
-// const Board = require("../models/board.model");
-// const Card = require("../models/card.model");
 
 columnController.get = async (req, res) => {
   const query = req.query;
   const [columns, error] = await Column.get(query);
 
   if (error) {
-    res.status(400).json("Error: " + error);
+    res.status(400).json("Error: ", error);
   } else {
     res.json(columns);
   }
@@ -18,7 +16,7 @@ columnController.getById = async (req, res) => {
   const [column, error] = await Column.getById(req.params.id);
 
   if (error) {
-    res.status(400).json("Error: " + error);
+    res.status(400).json("Error: ", error);
   } else {
     res.json(column);
   }
@@ -32,12 +30,6 @@ columnController.add = async (req, res) => {
     name,
     boardId,
   });
-
-  // // thêm id vào columnIdsList trong board chứa column này
-  // const [board, boardError] = await Board.getById(boardId);
-  // await Board.update(boardId, {
-  //   columnIdsList: [...board.columnIdsList, newColumn._id],
-  // });
 
   res.json(newColumn);
 };
@@ -55,7 +47,7 @@ columnController.update = async (req, res) => {
   });
 
   if (error) {
-    res.status(400).json("Error: " + error);
+    res.status(400).json("Error: ", error);
   } else {
     res.json(updatedColumn);
   }
@@ -79,9 +71,9 @@ columnController.delete = async (req, res) => {
   // });
 
   if (error) {
-    res.status(400).json("Error: " + error);
+    res.status(400).json("Error: ", error);
   } else {
-    res.json("Delete successfully");
+    res.json(deletedColumn);
   }
 };
 module.exports = columnController;
