@@ -4,6 +4,7 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const cors = require("cors");
+const passport = require("passport");
 
 const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
@@ -27,10 +28,26 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
-app.use("/users", usersRouter);
-app.use("/boards", boardsRouter);
-app.use("/columns", columnsRouter);
-app.use("/cards", cardsRouter);
+app.use(
+  "/users",
+  passport.authenticate("jwt", { session: false }),
+  usersRouter
+);
+app.use(
+  "/boards",
+  passport.authenticate("jwt", { session: false }),
+  boardsRouter
+);
+app.use(
+  "/columns",
+  passport.authenticate("jwt", { session: false }),
+  columnsRouter
+);
+app.use(
+  "/cards",
+  passport.authenticate("jwt", { session: false }),
+  cardsRouter
+);
 app.use("/auth", authRouter);
 
 // catch 404 and forward to error handler
