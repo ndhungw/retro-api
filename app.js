@@ -13,6 +13,7 @@ const columnsRouter = require("./routes/columns");
 const cardsRouter = require("./routes/cards");
 const authRouter = require("./routes/auth");
 require("./db/database");
+require("./configs/passport"); // pass passport for configuration
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+app.use(passport.initialize()); // required for passport
 
 app.use("/", indexRouter);
 app.use(
