@@ -100,7 +100,8 @@ User.update = async (id, { username, password, email, phone }) => {
     userToUpdate.username = username;
   }
   if (password) {
-    userToUpdate.password = password;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    userToUpdate.password = hashedPassword;
   }
   if (email) {
     userToUpdate.email = email;

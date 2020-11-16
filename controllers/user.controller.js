@@ -60,7 +60,21 @@ userController.update = async (req, res) => {
   });
 
   if (error) {
-    res.status(400).json("Error: ", error);
+    if (error.name === "MongoError" && error.code === 11000) {
+      const { username, email, phone } = error.keyValue;
+
+      let message = ` already belong to another user`;
+
+      if (email) {
+        message = "Email" + message;
+      } else if (phone) {
+        message = "Phone" + message;
+      }
+
+      return res.status(400).json({ message: message });
+    } else {
+      res.status(400).json({ error });
+    }
   } else {
     res.json(updatedUser);
   }
